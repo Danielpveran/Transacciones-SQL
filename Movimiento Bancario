@@ -1,0 +1,81 @@
+use myfood;
+
+DELIMITER //
+
+CREATE PROCEDURE MovimientoBancario(
+
+    IN saldo INT,
+
+    INOUT CuentaPaga INT,
+
+    INOUT CuentaRecive INT
+
+)
+
+BEGIN
+
+    DECLARE transferiencia_declinada BOOL DEFAULT FALSE;
+
+    DECLARE monto INT; 
+
+    SET monto = saldo;
+
+    SELECT CONCAT('Saldo en cuenta actual: ', CuentaPaga);
+
+    SELECT CONCAT('Saldo en cuenta actual: ', CuentaRecive);
+
+
+
+    START TRANSACTION;
+
+
+    IF CuentaPaga < monto THEN
+
+        SET transferiencia_declinada = TRUE;
+
+    ELSE
+
+
+        SET CuentaPaga = CuentaPaga- monto;
+
+        SET CuentaRecive = CuentaRecive + monto;
+
+    END IF;
+
+
+    IF transferiencia_declinada THEN
+
+        ROLLBACK;
+
+        SELECT 'Error revise su saldo actual';
+
+    ELSE
+
+        COMMIT; -- Confirmar la transacción
+
+        SELECT 'Operacion realizada con éxito';
+
+    END IF;
+
+
+
+    -- Imprimir saldos de cuentas después de la transacción
+
+    SELECT CONCAT('Saldo de cuenta de origen después de la transacción: ',  CuentaPaga);
+
+    SELECT CONCAT('Saldo de cuenta de destino después de la transacción: ', CuentaRecive);
+
+
+
+END//
+
+
+DELIMITER ;
+
+SET @CuentaPaga = 200000;
+
+SET @CuentaRecive = 400000;
+
+SELECT @CuentaPaga AS cuenta_actualizado, @CuentaRecive
+
+AS saldo_actualizado;
